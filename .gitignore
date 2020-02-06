@@ -343,3 +343,9 @@ dmypy.json
 .history
 
 # End of https://www.gitignore.io/api/git,java,macos,maven,python,pycharm,intellij,visualstudiocode
+/SpringElasticRepoDemo.iml
+/mvnw
+/mvnw.cmd
+/.mvn/wrapper/maven-wrapper.properties
+/.mvn/wrapper/MavenWrapperDownloader.java
+/.idea/
