@@ -1,0 +1,34 @@
+es:
+  host: 127.0.0.1
+  port: 9200
+  scheme: http
+  # 单位ms
+  socket_timeout: 60000
+  # 单位ms
+  connect_timeout: 60000
+  # 单位ms
+  search_timeout: 2000
+  # 返回文档的最低评分
+  min_score: 0.5
+  # ElasticSearch的用户名密码
+  username: 123
+  password: 123
+  # 搜索时使用的分词算法
+  search_analyzer: ik_smart
+  # 原索引名称
+  index_name: document_test
+  # 索引别名，用于实际搜索时使用
+  alias_name: document_test_alias
+  # 重建索引时使用的索引名称
+  temp_index_name: document_test_dest
+  # 默认的索引属性配置文件
+  properties_json: /json/index_properties.json
+  # 全字段检索的字段列表
+  all_fields: admission_dep,admission_ward,attending_physician,auxiliary_examination,birthplace,chief_complaint,chief_physician,daily_disease_course,examination_data,family_history,first_disease_course,marriage_history,past_medical_history,operation_record,personal_history,physical_examination,present_illness_history
+  # 高亮显示字段
+  highlight_fields: admission_dep,admission_ward,attending_physician,auxiliary_examination,birthplace,chief_complaint,chief_physician,daily_disease_course,examination_data,family_history,first_disease_course,marriage_history,past_medical_history,operation_record,personal_history,physical_examination,present_illness_history,check_data.name,check_data.detailItemList.detailName,examination_data.image_direction,examination_data.examination_category_code,examination_data.examination_result,treatment_data.name,treatment_data.category,operation_data.operation_name,operation_data.operator,diagnosis_data.diagnosis_name
+
+logging:
+  file:
+    path: ./logs/
+
