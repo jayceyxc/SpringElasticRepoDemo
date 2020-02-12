@@ -6,15 +6,26 @@ import com.linus.es.demo.documents.Person;
 import com.linus.es.demo.repositories.BookRepository;
 import com.linus.es.demo.repositories.InpatientRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.ShardSearchFailure;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.document.DocumentField;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.TypeVariable;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * @author: yuxuecheng
@@ -91,6 +102,53 @@ public class SpringElasticTestComponent implements CommandLineRunner {
 //        });
     }
 
+    private void readObject(Class clazz) {
+        try {
+            PropertyDescriptor[] propertyDescriptors = BeanUtils.getPropertyDescriptors(clazz);
+            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                log.info(propertyDescriptor.getPropertyType().getCanonicalName());
+                log.info(propertyDescriptor.toString());
+                TypeVariable<?>[] typeVariables = propertyDescriptor.getPropertyType().getTypeParameters();
+                for (int i = 0; i < typeVariables.length; ++i) {
+                    log.info(typeVariables[i].getName());
+                    log.info(typeVariables[i].getTypeName());
+                }
+            }
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices("qcgl_inpatient_alias");
+            searchRequest.source(searchSourceBuilder);
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+            SearchHits searchHits = searchResponse.getHits();
+            long tookInMillis = searchResponse.getTook().getMillis();
+
+            int failedShards = searchResponse.getFailedShards();
+            if (failedShards > 0) {
+                log.error("搜索时有shards失败");
+                ShardSearchFailure[] failures = searchResponse.getShardFailures();
+                for (ShardSearchFailure failure : failures) {
+                    log.error("失败索引名称：" + failure.index() + "，失败原因：" + failure.reason(), failure.getCause());
+                }
+            }
+            log.info(searchHits.toString());
+            SearchHit[] hits = searchHits.getHits();
+            for (SearchHit hit : hits) {
+                Map<String, DocumentField> documentFieldMap = hit.getFields();
+                Map<String, Object> sourceMap = hit.getSourceAsMap();
+                log.info(sourceMap.toString());
+                Field[] fields = clazz.getDeclaredFields();
+                for (Field field : fields) {
+                    log.info(field.getName());
+                    log.info(field.getDeclaringClass().getCanonicalName());
+                    log.info(field.getType().getCanonicalName());
+                }
+            }
+            log.info("耗时：" + tookInMillis);
+        } catch (IOException ioe) {
+            log.info(ioe.getMessage(), ioe);
+        }
+    }
+
     /**
      * Callback used to run the bean.
      *
@@ -102,5 +160,6 @@ public class SpringElasticTestComponent implements CommandLineRunner {
 //        saveBook();
 //        readBook();
         readInpatient();
+        readObject(Inpatient.class);
     }
 }

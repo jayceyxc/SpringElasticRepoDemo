@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.RestClients;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.http.HttpHeaders;
 
 import java.time.Duration;
@@ -70,6 +71,11 @@ public class SpringElasticConfig {
                 .withDefaultHeaders(httpHeaders)
                 .build();
         return RestClients.create(clientConfiguration).rest();
+    }
+
+    @Bean
+    ElasticsearchRestTemplate elasticsearchTemplate() {
+        return new ElasticsearchRestTemplate(restHighLevelClient());
     }
 
 }
